@@ -13,11 +13,11 @@ const userSchema = new mongoose.Schema({
   },
 });
 
-const Users = mongoose.model('Users', userSchema);
+const User = mongoose.model('User', userSchema);
 
 async function findUserByUsername(username) {
   try {
-    const user = await Users.findOne({ username }); 
+    const user = await User.findOne({ username }); 
     return user; 
   } catch (error) {
     console.error("Error finding user:", error);
@@ -28,7 +28,7 @@ async function findUserByUsername(username) {
 async function addUser(user) {
   console.log(user)
   try {
-    const newUser = new Users(user);
+    const newUser = new User(user);
     await newUser.save();
     console.log("User added successfully:", newUser);
     return newUser;
@@ -38,4 +38,4 @@ async function addUser(user) {
   }
 }
 
-module.exports = {Users, findUserByUsername, addUser}
+module.exports = {User, findUserByUsername, addUser}
