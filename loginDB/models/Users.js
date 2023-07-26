@@ -6,7 +6,7 @@ let userSchema = new Schema({
   username: String,
   password: String,
 });
-
+/*
 const User = mongoose.model('User', userSchema);
 
 async function findUserByUsername(username) {
@@ -33,3 +33,6 @@ async function addUser(user) {
 }
 
 module.exports = {User, findUserByUsername, addUser}
+*/
+
+module.exports = mongoose.model("User", userSchema)
