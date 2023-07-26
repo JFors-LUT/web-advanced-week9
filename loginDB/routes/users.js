@@ -23,7 +23,7 @@ const jwtOptions = {
 passport.use(
   new JwtStrategy(jwtOptions, async (payload, done) => {
     try {
-      const user = await User.findOne({ username: payload.username });
+      const user = await User.findOne({ email : payload.email  });
       if (!user) {
         return done(null, false);
       }
@@ -41,11 +41,11 @@ router.get('/', function(req, res, next) {
 
 router.get('/api/private', passport.authenticate('jwt', { session: false }), (req, res) => {
   console.log(req.body)
-  return res.status(200).json({ username: req.user.username });
+  return res.status(200).json({ email : req.user.email });
 });
 
 router.post('/api/user/register', [
-  //check("username").matches(/@/).withMessage('Illegal email format'),
+  //check("email").matches(/@/).withMessage('Illegal email format'),
   check('password')
     .isLength({ min: 8 }).withMessage('Password must be at least 8 characters long')
     .matches(/[a-z]/).withMessage('Password must contain at least one lowercase letter')
@@ -60,20 +60,21 @@ router.post('/api/user/register', [
     return res.status(400).json({ errors: errors.array() });
   }
 
-  const username = req.body.username; 
+  console.log(req.body)
+  const email  = req.body.email ; 
   const password = req.body.password; 
 
   try {
-    const userExists = await User.findOne({ username });
+    const userExists = await User.findOne({ email  });
 
     if (userExists) {
-      return res.status(403).json({ error: 'Username already in use.' });
+      return res.status(403).json('Username already in use.');
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
     User.create({
-      username,
+      email,
       password: hashedPassword,
     });
 
@@ -88,12 +89,12 @@ router.post('/api/user/register', [
 
 router.post('/api/user/login', async (req, res) => {
 
-  const username = req.body.username; 
+  const email  = req.body.email ; 
   const password = req.body.password; 
   
 
   try {
-    const user = await User.findOne({ username });
+    const user = await User.findOne({ email  });
     if (!user) {
       return res.status(401).json('Invalid username');
     };
@@ -103,7 +104,7 @@ router.post('/api/user/login', async (req, res) => {
       return res.status(401).json('Invalid credentials');
     };
     const payload = {
-      username: user.username,
+      email : user.email ,
     };
 
     jwt.sign(payload, SECRET, (err, token) => {
