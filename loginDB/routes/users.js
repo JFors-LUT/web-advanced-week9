@@ -5,7 +5,7 @@ const { v4: uuidv4 } = require('uuid');
 const jwt = require('jsonwebtoken');
 const userModel = require('../models/Users');
 
-/* GET users listing. */
+
 router.get('/', function(req, res, next) {
   res.send('respond with a resource');
 });
@@ -13,8 +13,8 @@ router.get('/', function(req, res, next) {
 router.post('/api/user/register', async (req, res) => {
   const { username, password } = req.body;
   console.log(req.body);
-
-  if (await userModel.findUserByUsername(username)) {
+  const userFound = await userModel.findUserByUsername(username)
+  if (userFound) {
     return res.status(403).json({email:'Email already in use.'});
   }
 
