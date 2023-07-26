@@ -7,6 +7,7 @@ var mongoose = require('mongoose');
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
+const PORT = 3000;
 
 var app = express();
 const mongodb = "mongodb://localhost:27017/testdb";
@@ -46,6 +47,11 @@ app.use(function(err, req, res, next) {
   // render the error page
   res.status(err.status || 500);
   res.render('error');
+});
+
+
+app.listen(PORT, () => {
+  console.log(`Server is running on http://localhost:${PORT}`);
 });
 
 module.exports = app;
