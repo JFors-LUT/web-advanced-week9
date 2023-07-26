@@ -79,7 +79,7 @@ router.post('/api/user/register', [
     });
 
 
-    res.status(201).json('ok');
+    res.status(200).json('ok');
   } catch (error) {
     console.error(error);
     return res.status(500).json('error');
