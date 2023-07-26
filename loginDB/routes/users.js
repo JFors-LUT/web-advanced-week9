@@ -6,6 +6,8 @@ const mongoose = require("mongoose");
 const User = require('../models/Users');
 var router = express.Router();
 
+const SECRET = process.env.SECRET || 'secret';
+
 
 router.get('/', function(req, res, next) {
   res.send('respond with a resource');
@@ -30,6 +32,7 @@ router.post('/api/user/register', async (req, res) => {
 });
 */
 
+/*
 router.post('/api/user/register', (req, res, next) => {
   
   const user = req.body.username;
@@ -58,41 +61,70 @@ router.post('/api/user/register', (req, res, next) => {
       }
     });
 });
-
-router.post('/api/user/login', async (req, res) => {
+*/
+router.post('/api/user/register', async (req, res) => {
   const { username, password } = req.body;
-  const userFind = await User.findOne({ username }); 
 
-  if (!userFind) {
-    return res.status(401).json('Invalid credentials');
+  try {
+    const userExists = await User.findOne({ username });
+
+    if (userExists) {
+      return res.status(403).json('Username already in use.');
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const newUser = new User({
+      username,
+      password: hashedPassword,
+    });
+
+   await newUser.save();
+
+    res.status(201).json("ok");
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json('error');
   }
-
-  const passwordMatch = bcrypt.compare(password, userFind.password);
-
-  if (!passwordMatch) {
-    return res.status(401).json('Invalid credentials');
-  }
-
-  const token = jwt.sign({ username: userFind.username }, 'secret');
-  res.status(200).json({ token });
 });
 
-  const verifyToken = (req, res, next) => {
-    const token = req.headers.authorization?.split(' ')[1];
+
+router.post('/api/user/login', async (req, res) => {
+
+  const username = req.body.username; 
+  const password = req.body.password; 
   
-    if (!token) {
-      return res.status(401).json('Unauthorized');
-    }
-  
-    jwt.verify(token, 'secret', (err, decodedToken) => {
+
+  try {
+    const user = await User.findOne({ username });
+    console.log(user)
+    if (!user) {
+      return res.status(401).json('Invalid username');
+    };
+
+    const passwordMatch = await bcrypt.compare(password, user.password);
+    console.log(passwordMatch)
+    if (!passwordMatch) {
+      return res.status(401).json('Invalid credentials');
+    };
+
+    const payload = {
+      email: user.email,
+    };
+
+    jwt.sign(payload, SECRET, (err, token) => {
       if (err) {
-        return res.status(401).json('Invalid token');
+        console.error(err);
+        return res.status(500).json('Internal server error');
       }
-  
-      req.userId = decodedToken.userId;
-      next();
+
+      return res.status(200).json({ token });
     });
-  };
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json(error);
+  }
+});
 
 
 /*
