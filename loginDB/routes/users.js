@@ -45,7 +45,7 @@ router.get('/api/private', passport.authenticate('jwt', { session: false }), (re
 });
 
 router.post('/api/user/register', [
-  check("username").matches(/@/).withMessage('Illegal email format'),
+  //check("username").matches(/@/).withMessage('Illegal email format'),
   check('password')
     .isLength({ min: 8 }).withMessage('Password must be at least 8 characters long')
     .matches(/[a-z]/).withMessage('Password must contain at least one lowercase letter')
