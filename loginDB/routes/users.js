@@ -5,6 +5,9 @@ const jwt = require('jsonwebtoken');
 const mongoose = require("mongoose");
 const passport = require('passport');
 const { Strategy: JwtStrategy, ExtractJwt } = require('passport-jwt');
+const { check, validationResult } = require('express-validator');
+
+
 
 const User = require('../models/Users');
 var router = express.Router();
@@ -41,27 +44,26 @@ router.get('/api/private', passport.authenticate('jwt', { session: false }), (re
   return res.status(200).json({ username: req.user.username });
 });
 
-const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[~`!@#$%^&*()-_+={}[\]|\\;:"<>,./?]).{8,}$/;
-const emailRegex = /^.*@.*$/;
+router.post('/api/user/register', [
+  check("username").matches(/@/).withMessage('Illegal email format'),
+  check('password')
+    .isLength({ min: 8 }).withMessage('Password must be at least 8 characters long')
+    .matches(/[a-z]/).withMessage('Password must contain at least one lowercase letter')
+    .matches(/[A-Z]/).withMessage('Password must contain at least one uppercase letter')
+    .matches(/\d/).withMessage('Password must contain at least one number')
+    .matches(/[~`!@#$%^&*()-_+={}[\]|\\;:"<>,./?]/).withMessage('Password must contain at least one symbol: ~`!@#$%^&*()-_+={}[]|\\;:"<>,./?')
+], async (req, res) => {
 
-router.post('/api/user/register', async (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
   const username = req.body.username; 
   const password = req.body.password; 
 
   try {
     const userExists = await User.findOne({ username });
-
-    if (userExists) {
-      return res.status(403).json('Username already in use.');
-    }
-
-    if (!emailRegex.test(username)) {
-      return res.status(400).json('Invalid email format.');
-    }
-
-    if (!strongPasswordRegex.test(password)) {
-      return res.status(400).json('Invalid password format. Password should include at least one lowercase letter, one uppercase letter, one number, one symbol and 8 characters');
-    }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
