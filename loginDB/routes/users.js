@@ -55,6 +55,7 @@ router.post('/api/user/register', [
 ], async (req, res) => {
 
   const errors = validationResult(req);
+
   if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array() });
   }
@@ -65,14 +66,17 @@ router.post('/api/user/register', [
   try {
     const userExists = await User.findOne({ username });
 
+    if (userExists) {
+      return res.status(403).json({ error: 'Username already in use.' });
+    }
+
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const newUser = new User({
+    User.create({
       username,
       password: hashedPassword,
     });
 
-    await newUser.save();
 
     res.status(201).json('ok');
   } catch (error) {
