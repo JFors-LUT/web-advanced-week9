@@ -42,7 +42,7 @@ router.get('/api/private', passport.authenticate('jwt', { session: false }), (re
 });
 
 const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[~`!@#$%^&*()-_+={}[\]|\\;:"<>,./?]).{8,}$/;
-const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const emailRegex = /^.*@.*$/;
 
 router.post('/api/user/register', async (req, res, next) => {
   const username = req.body.username; 
