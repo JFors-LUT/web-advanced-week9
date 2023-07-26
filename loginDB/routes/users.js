@@ -31,21 +31,24 @@ router.post('/api/user/register', async (req, res) => {
 */
 
 router.post('/api/user/register', (req, res, next) => {
-  const { user, pw } = req.body;
+  
+  const user = req.body.username;
+  const password  = req.body.password;
+
   User.findOne({ username:user }) 
     .exec()
-    .then((user) => {
-      if (!user) {
+    .then((userFind) => {
+      if (!userFind) {
         return User.create({
           username: user,
-          password: pw,
+          password: password,
         });
       } else {
         return Promise.reject('User already in database.');
       }
     })
-    .then((recipe) => {
-      res.status(201).json('User registered');
+    .then((user) => {
+      res.status(201).json(user);
     })
     .catch((error) => {
       if (error === 'User already in database.') {
